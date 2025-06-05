@@ -86,7 +86,7 @@ local autoConvertPollinated = false
 local autoHoneyFarm = false
 
 -- Settings
-local pickupRange = 20
+local pickupRange = 1000
 local pickupDelay = 0.1
 local minWeight = 0.01
 local plantDelay = 0.1
@@ -365,8 +365,8 @@ mainTab:Slider({
     Step = 1,
     Value = {
         Min = 5,
-        Max = 50,
-        Default = pickupRange,
+        Max = 1000,
+        Default = 1000,
     },
     Callback = function(value)
         pickupRange = value
