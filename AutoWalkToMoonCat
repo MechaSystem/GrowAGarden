@@ -1,0 +1,73 @@
+local player = game.Players.LocalPlayer
+local cats = {}
+local currentIndex = 1
+local Noclip = nil
+local Clip = nil
+local humanoid = nil
+_G.On = true -- Global toggle (true = on, false = off)
+_G.MoveMode = "Walk" -- Options: "Walk", "Teleport"
+
+-- NoClip functionality (allows passing through walls/objects)
+local function noclip()
+    Clip = false
+    local function Nocl()
+        if Clip == false and player.Character then
+            for _, v in ipairs(player.Character:GetDescendants()) do
+                if v:IsA("BasePart") and v.CanCollide then
+                    v.CanCollide = false
+                end
+            end
+        end
+    end
+    Noclip = game:GetService("RunService").Stepped:Connect(Nocl)
+end
+
+local function clip()
+    if Noclip then Noclip:Disconnect() end
+    Clip = true
+end
+
+local function findCats()
+    local matches = {}
+    for _, obj in ipairs(game.Workspace.PetsPhysical:GetDescendants()) do
+        if obj.Name:lower() == "cat" then
+            table.insert(matches, obj)
+        end
+    end
+    return matches
+end
+
+local function moveToCats()
+    noclip() -- Enable NoClip to pass through walls
+    while true do
+        if _G.On and player.Character then
+            humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+            local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+            cats = findCats()
+            if #cats > 0 and humanoid and humanoidRootPart then
+                local targetModel = cats[currentIndex]
+                local targetCFrame = targetModel:GetPivot()
+                if _G.MoveMode == "Walk" then
+                    humanoid:MoveTo(targetCFrame.Position)
+                    humanoid.MoveToFinished:Wait()
+                    task.wait(0.5) -- Stabilize
+                elseif _G.MoveMode == "Teleport" then
+                    humanoidRootPart.CFrame = targetCFrame
+                    task.wait(1) -- Cycle time
+                end
+                currentIndex = currentIndex % #cats + 1
+            end
+        else
+            clip()
+        end
+        task.wait(0.1)
+    end
+end
+
+player.CharacterAdded:Connect(function()
+    if _G.On then
+        noclip()
+    end
+end)
+
+moveToCats()
