@@ -1,0 +1,64 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+
+-- Configurable variables
+local FruitWeights = {
+    Candy Blossom = 70,
+}
+local LastToggleState = false -- Default state for first run
+local Toggles = not LastToggleState -- Toggle state for current run
+print("Auto Fruit Removal: " .. (Toggles and "ON" or "OFF"))
+
+local function GetFarms()
+    return Workspace:WaitForChild("Farm", 5):GetChildren()
+end
+
+local function GetFarmOwner(Farm: Folder): string
+    local Important = Farm:WaitForChild("Important", 5)
+    local Data = Important:WaitForChild("Data", 5)
+    local Owner = Data:WaitForChild("Owner", 5)
+    return Owner.Value
+end
+
+local function GetFarm(PlayerName: string): Folder?
+    for _, Farm in pairs(GetFarms()) do
+        if GetFarmOwner(Farm) == PlayerName then
+            return Farm
+        end
+    end
+    return nil
+end
+
+if Toggles then
+    local MyFarm = GetFarm(LocalPlayer.Name)
+    if not MyFarm then return end
+
+    local Important = MyFarm:WaitForChild("Important", 5)
+    local PlantsPhysical = Important:WaitForChild("Plants_Physical", 5)
+
+    while Toggles do
+        for fruitName, DesireKG in pairs(FruitWeights) do
+            local TargetPlant = PlantsPhysical:FindFirstChild(fruitName)
+            if TargetPlant then
+                local Fruits = TargetPlant:FindFirstChild("Fruits")
+                if Fruits then
+                    for _, fruit in pairs(Fruits:GetChildren()) do
+                        local Weight = fruit:FindFirstChild("Weight")
+                        if Weight and Weight.Value <= DesireKG then
+                            local PrimaryPart = fruit:FindFirstChild("PrimaryPart")
+                            if PrimaryPart then
+                                local args = {
+                                    [1] = PrimaryPart
+                                }
+                                ReplicatedStorage:WaitForChild("GameEvents", 5):WaitForChild("Remove_Item", 5):FireServer(unpack(args))
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        wait(1) -- Delay between loops
+    end
+end
