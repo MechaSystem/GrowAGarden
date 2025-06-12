@@ -5,7 +5,7 @@ local LocalPlayer = Players.LocalPlayer
 
 -- Configurable variables
 local FruitWeights = {
-    Candy Blossom = 70,
+    CandyBlossom = 70,
 }
 local LastToggleState = false -- Default state for first run
 local Toggles = not LastToggleState -- Toggle state for current run
