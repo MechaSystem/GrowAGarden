@@ -1,0 +1,40 @@
+repeat task.wait() until game:IsLoaded()
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TeleportService = game:GetService("TeleportService")
+local LocalPlayer = Players.LocalPlayer
+local Backpack = LocalPlayer:WaitForChild("Backpack")
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local CraftingService = ReplicatedStorage.GameEvents.CraftingGlobalObjectService
+
+local DinoEvent = workspace:FindFirstChild("DinoEvent") or ReplicatedStorage.Modules:WaitForChild("UpdateService"):WaitForChild("DinoEvent")
+if DinoEvent and DinoEvent:IsDescendantOf(ReplicatedStorage) then
+    DinoEvent.Parent = workspace
+end
+
+local DinoTable = workspace:WaitForChild("DinoEvent"):WaitForChild("DinoCraftingTable")
+
+CraftingService:FireServer("SetRecipe", DinoTable, "DinoEventWorkbench", "Ancient Seed Pack")
+task.wait(0.3)
+
+for _, tool in ipairs(Backpack:GetChildren()) do
+    if tool:IsA("Tool") and tool:GetAttribute("h") == "Dinosaur Egg" then
+        tool.Parent = Character
+        task.wait(0.3)
+        local uuid = tool:GetAttribute("c")
+        if uuid then
+            CraftingService:FireServer("InputItem", DinoTable, "DinoEventWorkbench", 1, {
+                ItemType = "PetEgg",
+                ItemData = { UUID = uuid }
+            })
+        end
+        tool.Parent = Backpack
+        break
+    end
+end
+
+task.wait(0.3)
+CraftingService:FireServer("Craft", DinoTable, "DinoEventWorkbench")
+task.wait(1)
+TeleportService:Teleport(game.PlaceId)
