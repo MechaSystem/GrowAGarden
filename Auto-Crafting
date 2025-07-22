@@ -152,5 +152,7 @@ if _G.AutoDinoEgg then
     CraftingService:FireServer("Craft", DinoTable, "DinoEventWorkbench")
 end
 
-task.wait(_G.TeleportDelay)
-TeleportService:Teleport(game.PlaceId)
+if _G.TeleportOn then
+    task.wait(_G.TeleportDelay)
+    TeleportService:Teleport(game.PlaceId)
+end
